@@ -4,6 +4,8 @@ Editorial, dark, image-first photography site. [Astro](https://astro.build) + Co
 Collections, static output, bilingual (English `/`, Polish `/pl/`). Design/architecture
 rationale lives in [`SPEC.md`](./SPEC.md); this file is the practical how-to.
 
+This repo also contains a simple CRM manager, which makes managing content on the website easier.
+
 ```bash
 npm install
 npm run dev      # http://localhost:4321
@@ -72,12 +74,17 @@ boats: {
 | Title/category/location/year | `works.ts` (falls back to the yaml `name`) |
 | Home grid | series with `home: true` |
 
-## The manager tool
+## The manager tool (and basic CRM)
 
 `tools/manager/` is a small local admin page for everything above — reorder series, toggle
-`featured`/home, edit FAQs and pricing, add testimonials, drag-drop new photos — without
-hand-editing YAML/TS. It shows a diff before writing anything to disk, and has buttons to run
-the dev server, stage (`git add`), and deploy.
+`featured`/home, edit FAQs and pricing, drag-drop new photos — without hand-editing YAML/TS.
+It shows a diff before writing anything to disk, and has buttons to run the dev server, stage
+(`git add`), and deploy.
+
+It also doubles as a very basic CRM: each testimonial is a per-client record (name/attribution,
+quote or photo/video, language, consent-to-publish flag, date) stored as one YAML file under
+`src/content/testimonials/`. Add/edit/remove clients and their consent there — testimonials
+only go live on the site once `consent: true` and the minimum count is met.
 
 ```bash
 cd tools/manager && npm start   # http://localhost:5177
