@@ -6,6 +6,8 @@ rationale lives in [`SPEC.md`](./SPEC.md); this file is the practical how-to.
 
 This repo also contains a simple CRM manager, which makes managing content on the website easier.
 
+The final result of this repo can be seen on [my website](https://dominik.gallery).
+
 ```bash
 npm install
 npm run dev      # http://localhost:4321
