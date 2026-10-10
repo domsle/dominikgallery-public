@@ -1,0 +1,147 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../site.config';
+import { getLangFromUrl, useTranslations, alternatePath, routeFromUrl, languages, defaultLang } from '../i18n/utils';
+
+interface Props {
+  title?: string;      // composed as "{title} - {site.name}"
+  titleFull?: string;  // used verbatim (overrides `title`) - for pages with a bespoke <title>
+  description?: string;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown>;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const {
+  title,
+  titleFull,
+  description = lang === 'pl' ? site.descriptionPl : site.description,
+  ogImage = '/og-default.jpg',
+  jsonLd,
+} = Astro.props;
+
+const pageTitle = titleFull
+  ?? (title ? `${title} - ${site.name}` : `${site.name} - ${t('site.tagline')}`);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+// hreflang alternates for every locale + x-default.
+const locales = Object.keys(languages) as (keyof typeof languages)[];
+const alternates = locales.map((l) => ({
+  lang: l,
+  href: new URL(alternatePath(Astro.url, l), Astro.site).href,
+}));
+// x-default points at the default locale (Polish, served at root).
+const xDefault = new URL(alternatePath(Astro.url, 'pl'), Astro.site).href;
+
+// Auto-redirect (client-side): first-visit language detection + stored-preference honoring.
+// Only fires on the default (un-prefixed, Polish) locale, so there's no redirect loop.
+const isDefaultLocale = lang === defaultLang;
+const isHome = routeFromUrl(Astro.url) === '/';
+const redirectHref = alternatePath(Astro.url, 'en'); // this page's English equivalent
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Intro trigger - runs before <body> paints so page-load reveals start in their
+        hidden state (no flash). No-JS visitors never get `.intro-js`, so everything
+        renders at its natural, fully-visible state. Homepage "long pull" + subpage
+        [data-reveal] blocks both hang off this. */}
+    <script is:inline>
+      (function () {
+        var el = document.documentElement;
+        el.classList.add('intro-js');
+        function run() {
+          requestAnimationFrame(function () {
+            el.setAttribute('data-intro', 'in');
+          });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', run, { once: true });
+        } else {
+          run();
+        }
+        // Soft-nav may replay (acceptable). bfcache keeps the persisted <html> attribute,
+        // so restores do not replay.
+        document.addEventListener('astro:page-load', run);
+      })();
+    </script>
+
+    {isDefaultLocale && (
+      <script is:inline define:vars={{ isHome, redirectHref }}>
+        // Runs before paint on the default (Polish) locale. Honors an explicit choice
+        // (localStorage 'pref-lang'); otherwise detects the browser language once, but
+        // only on a homepage entry. A non-Polish visitor is sent to the English mirror.
+        try {
+          var KEY = 'pref-lang';
+          var pref = localStorage.getItem(KEY);
+          if (!pref && isHome) {
+            var langs = navigator.languages || [navigator.language || ''];
+            var wantsPl = langs.some(function (l) { return String(l).toLowerCase().indexOf('pl') === 0; });
+            pref = wantsPl ? 'pl' : 'en';
+            localStorage.setItem(KEY, pref);
+          }
+          if (pref === 'en') {
+            location.replace(redirectHref);
+          }
+        } catch (e) {}
+      </script>
+    )}
+
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {alternates.map((a) => (
+      <link rel="alternate" hreflang={a.lang} href={a.href} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={xDefault} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_US'} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <link rel="icon" type="image/png" href="/DS.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@100;400;600;700;800;900&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+  </head>
+  <body>
+    <a href="#main" class="sr-only">{t('a11y.skip')}</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

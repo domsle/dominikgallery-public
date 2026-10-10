@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Polish moved to the root; the old /pl/* URLs 301 to their new root path.
+# (Non-forced, so real files still win - but no /pl/* files exist after the swap.)
+[[redirects]]
+  from = "/pl/*"
+  to = "/:splat"
+  status = 301
+
+[[redirects]]
+  from = "/pl"
+  to = "/"
+  status = 301

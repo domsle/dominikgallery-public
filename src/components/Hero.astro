@@ -1,0 +1,279 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+
+interface Props {
+  images: ImageMetadata[];
+}
+const { images } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Keep the band to a body-of-work sized set, then duplicate once so translateX(-50%)
+// loops seamlessly. Render-the-list-twice rule from the spec.
+const base = images.slice(0, 9);
+const track = [...base, ...base];
+
+const ticker = [t('hero.ticker.1'), t('hero.ticker.2')];
+---
+
+<section class="hero-block">
+  {/* Marquee band - decorative. Duplicated ONCE so -50% loops with no seam. */}
+  <div class="band" aria-hidden="true">
+    {/* .strip-pull carries the entry pull; .band-track carries the marquee drift -
+        two elements so the transforms compose instead of overwriting each other. */}
+    <div class="strip-pull">
+      <div class="band-track">
+        {track.map((img, i) => {
+          const orig = i % base.length;
+          return (
+            <div class="tile" style={`--i:${orig}`}>
+              <Image
+                src={img}
+                alt=""
+                widths={[250, 500]}
+                sizes="250px"
+                loading={orig < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+    <div class="veil"></div>
+    <div class="fade"></div>
+    <div class="ticker">
+      <div class="ticker-inner">
+        {ticker.map((item, i) => (
+          <>
+            {i > 0 && <span class="star" aria-hidden="true">✳</span>}
+            <span>{item}</span>
+          </>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <h1>{t('hero.h1.pre')}<em>{t('hero.h1.em')}</em>{t('hero.h1.post')}</h1>
+    <p class="lede">{t('hero.lede')}</p>
+    <div class="cta-row">
+      <a class="hbtn hbtn--solid" href={localizePath('/works', lang)}>
+        {t('hero.cta.portfolio')} <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="hbtn hbtn--ghost" href={localizePath('/contact', lang)}>
+        {t('hero.cta.contact')}
+      </a>
+    </div>
+  </header>
+</section>
+
+<style>
+  .hero-block { overflow: hidden; }
+
+  /* ---------- marquee band ---------- */
+  .band { position: relative; height: 300px; overflow: hidden; }
+  /* strip-pull: full band width, so pull-slow's 58% is ~58% of the viewport. */
+  .strip-pull { will-change: transform; }
+  .band-track {
+    display: flex;
+    gap: 10px;
+    width: max-content;
+    will-change: transform;
+  }
+  .tile {
+    flex: none;
+    width: 250px;
+    height: 300px;
+    overflow: hidden;
+    background: var(--surface);
+    filter: grayscale(0.3);
+    opacity: 0.62;
+    transition: filter 0.45s var(--ease), opacity 0.45s var(--ease);
+  }
+  .tile:hover { filter: grayscale(0); opacity: 1; }
+  .tile :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .veil {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 60% 90% at 50% 100%, rgba(10, 10, 10, 0.96), rgba(10, 10, 10, 0.25));
+  }
+  .fade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 120px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--bg), rgba(10, 10, 10, 0));
+  }
+
+  .ticker {
+    position: absolute;
+    left: 0; right: 0; bottom: 14px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .ticker-inner {
+    display: flex;
+    gap: 34px;
+    white-space: nowrap;
+    font: 500 9.5px/1 var(--font-mono);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(244, 242, 238, 0.55);
+  }
+  .ticker-inner .star { opacity: 0.4; }
+
+  /* ---------- hero (overlaps the band) ---------- */
+  .hero {
+    position: relative;
+    z-index: 2;
+    margin-top: -40px;
+    padding: 34px var(--pad) 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+  }
+  .hero h1 {
+    margin: 0;
+    max-width: 940px;
+    font: 900 92px/0.88 var(--font-display);
+    letter-spacing: -0.04em;
+    text-transform: none;
+    text-wrap: balance;
+  }
+  .hero h1 em {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    text-transform: lowercase;
+  }
+  .lede {
+    margin: 0;
+    max-width: 520px;
+    font: 400 15px/1.65 var(--font-display);
+    color: rgba(244, 242, 238, 0.62);
+    text-wrap: pretty;
+  }
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ---------- hero buttons ---------- */
+  .hbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 22px;
+    border: 1px solid transparent;
+    font: 600 11px/1 var(--font-display);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .hbtn .arrow { font-size: 13px; }
+  .hbtn--solid { background: var(--text); color: var(--bg); }
+  .hbtn--solid:hover { background: #fff; transform: translateY(-1px); }
+  .hbtn--ghost { border-color: rgba(244, 242, 238, 0.25); color: var(--text); }
+  .hbtn--ghost:hover { border-color: var(--text); }
+
+  @keyframes band-slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ---------- page-load intro ("long pull") ----------
+     All animations sit paused at their start (fill: both) the moment `.intro-js` is
+     on <html>, so nothing the intro reveals is visible at t=0. Flipping
+     data-intro="in" (one rAF after DOMContentLoaded) runs the whole timeline at once.
+     Everything lives under no-preference, so prefers-reduced-motion gets the natural,
+     fully-settled state - no pull, no marquee, no ladder. */
+  @media (prefers-reduced-motion: no-preference) {
+    /* 1 - film strip pulled in from the right */
+    :global(html.intro-js) .strip-pull {
+      animation: pull-slow 2.1s cubic-bezier(.12, .9, .15, 1) both paused;
+    }
+    /* 3 - marquee drift, delayed to ~90% of the pull so it inherits the momentum.
+       (keep marquee delay ≈ pull duration − 0.2s) */
+    :global(html.intro-js) .band-track {
+      animation: band-slide 58s linear infinite 1.9s paused;
+    }
+    /* 2 - each image flashes soft-bright into place; `--i` is its index within one
+       image set, so both halves of the duplicated track flash in sync (no seam). */
+    :global(html.intro-js) .tile :global(img) {
+      animation: flash-soft 0.8s ease-out both paused;
+      animation-delay: calc(0.15s + 0.05s * var(--i, 0));
+    }
+
+    /* 4 - content ladder rises + fades as the strip settles */
+    :global(html.intro-js) .ticker,
+    :global(html.intro-js) .hero h1,
+    :global(html.intro-js) .lede,
+    :global(html.intro-js) .hbtn {
+      animation: fade-up 0.8s cubic-bezier(.16, 1, .3, 1) both paused;
+    }
+    :global(html.intro-js) .ticker { animation-delay: 1.55s; }
+    :global(html.intro-js) .hero h1 { animation-delay: 1.60s; }
+    :global(html.intro-js) .lede { animation-delay: 1.80s; }
+    :global(html.intro-js) .hbtn--solid { animation-delay: 1.90s; }
+    :global(html.intro-js) .hbtn--ghost { animation-delay: 1.96s; }
+
+    /* trigger: release every paused layer together */
+    :global(html.intro-js[data-intro='in']) .strip-pull,
+    :global(html.intro-js[data-intro='in']) .band-track,
+    :global(html.intro-js[data-intro='in']) .tile :global(img),
+    :global(html.intro-js[data-intro='in']) .ticker,
+    :global(html.intro-js[data-intro='in']) .hero h1,
+    :global(html.intro-js[data-intro='in']) .lede,
+    :global(html.intro-js[data-intro='in']) .hbtn {
+      animation-play-state: running;
+    }
+    /* keep the hover-to-pause on the marquee (out-specifies the running rule) */
+    :global(html.intro-js[data-intro='in']) .band:hover .band-track {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes pull-slow {
+    from { transform: translate3d(58%, 0, 0); }
+    to   { transform: translate3d(0, 0, 0); }
+  }
+  @keyframes flash-soft {
+    from { opacity: 0; filter: brightness(1.7) saturate(.3); }
+    to   { opacity: 1; filter: brightness(1) saturate(1); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(34px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1100px) {
+    .hero h1 { font-size: 68px; }
+    .band, .tile { height: 240px; }
+    .tile { width: 200px; }
+  }
+  @media (max-width: 700px) {
+    .hero { margin-top: -24px; }
+    .hero h1 { font-size: 44px; letter-spacing: -0.03em; }
+    .band, .tile { height: 190px; }
+    .tile { width: 150px; }
+    .hbtn { flex: 1 1 auto; justify-content: center; }
+  }
+  /* Touch: no hover - keep tiles a touch brighter, animation still runs. */
+  @media (hover: none) {
+    .tile { filter: grayscale(0.15); opacity: 0.8; }
+  }
+</style>

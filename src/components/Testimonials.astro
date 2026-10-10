@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { testimonialsMinimum } from '../site.config';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Only consented entries, newest first.
+const entries = (await getCollection('testimonials', (e) => e.data.consent === true))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// The whole section renders nothing until the threshold is met.
+const show = entries.length >= testimonialsMinimum;
+
+// Gloss: on the locale whose language differs from the entry, show its translation.
+const glossFor = (d: { lang?: string; translation?: string }) =>
+  d.lang && d.lang !== lang ? d.translation : undefined;
+---
+
+{show && (
+  <section class="section section--soft">
+    <div class="container">
+      <header class="head">
+        <p class="eyebrow">{t('testimonials.eyebrow')}</p>
+        <h2 class="section-title">{t('testimonials.title')}</h2>
+      </header>
+
+      <div class="grid">
+        {entries.map((e) => {
+          const d = e.data;
+          const gloss = glossFor(d);
+          return (
+            <figure class="card">
+              {d.type === 'quote' && d.content && (
+                <blockquote>“{d.content}”</blockquote>
+              )}
+              {d.type === 'image' && d.src && (
+                <img class="shot" src={d.src} alt={d.attribution ?? ''} loading="lazy" />
+              )}
+              {d.type === 'video' && d.src && (
+                <video class="shot" src={d.src} controls playsinline></video>
+              )}
+              {gloss && <p class="gloss">{gloss}</p>}
+              {d.attribution && <figcaption class="who">{d.attribution}</figcaption>}
+            </figure>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gap);
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  blockquote { margin: 0; font-size: 1.05rem; line-height: 1.55; }
+  .shot { width: 100%; height: auto; border-radius: var(--radius); display: block; }
+  .gloss { margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+  .who { color: var(--muted); font-size: 0.82rem; }
+
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+</style>

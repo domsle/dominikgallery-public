@@ -1,0 +1,77 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getContent } from '../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { services } = getContent(lang);
+---
+
+<section class="section services" id="services">
+  <div class="container">
+    <header class="head">
+      <p class="eyebrow">{t('services.eyebrow')}</p>
+      <h2 class="section-title">{t('services.title')}</h2>
+    </header>
+
+    <ul class="rows" id="svc-rows">
+      {services.map((s, i) => (
+        <li class="row" data-index={i}>
+          <span class="idx">{String(i + 1).padStart(2, '0')}</span>
+          <span class="title">{s.title}</span>
+          <span class="blurb">{s.blurb}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .services { position: relative; }
+  .head { margin-bottom: clamp(2rem, 5vw, 4rem); }
+
+  .rows { list-style: none; padding: 0; border-top: 1px solid var(--border); }
+  .row {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 18rem) 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    padding: clamp(1.25rem, 3vw, 2rem) 0;
+    border-bottom: 1px solid var(--border);
+    transition: padding-left 0.4s var(--ease), color 0.4s var(--ease);
+  }
+  .idx {
+    color: var(--faint);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    line-height: 1;
+    /* nudge down to cap-align the small number with the big title cap */
+    padding-top: 0.25em;
+  }
+  .row .title {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+    line-height: 1;
+    transition: color 0.4s var(--ease);
+  }
+  .blurb {
+    color: var(--muted);
+    max-width: 42ch;
+    line-height: 1.5;
+    /* offset the line-box leading so the first line caps with the title */
+    margin-top: -0.15em;
+  }
+
+  @media (hover: hover) and (min-width: 761px) {
+    .row:hover { padding-left: 1.25rem; }
+    .row:hover .title { color: var(--text); }
+    .rows:hover .row:not(:hover) .title { color: var(--faint); }
+  }
+
+  @media (max-width: 760px), (hover: none) {
+    .row { grid-template-columns: 2.5rem 1fr; }
+    .row .blurb { grid-column: 2; }
+  }
+</style>

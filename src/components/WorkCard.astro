@@ -1,0 +1,80 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  href: string;
+  title: string;
+  category: string;
+  cover: ImageMetadata;
+  index?: number;
+  eager?: boolean;
+  [key: string]: unknown;
+}
+const { href, title, category, cover, index, eager = false, ...rest } = Astro.props;
+const num = index != null ? String(index).padStart(2, '0') : undefined;
+---
+
+<a class="card" href={href} {...rest}>
+  <div class="frame">
+    <Image
+      src={cover}
+      alt={title}
+      widths={[400, 700, 1000]}
+      sizes="(max-width: 640px) 90vw, (max-width: 1000px) 45vw, 30vw"
+      loading={eager ? 'eager' : 'lazy'}
+      fetchpriority={eager ? 'high' : 'auto'}
+    />
+  </div>
+  <div class="meta">
+    <div class="line">
+      {num && <span class="num">{num}</span>}
+      <h3 class="title">{title}</h3>
+    </div>
+    <span class="cat">{category}</span>
+  </div>
+</a>
+
+<style>
+  .card { display: block; }
+  .frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    background: var(--surface);
+    border-radius: var(--radius);
+  }
+  .frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.2);
+    transform: scale(1);
+    transition: filter 0.6s var(--ease), transform 0.6s var(--ease);
+  }
+  .card:hover .frame :global(img),
+  .card:focus-visible .frame :global(img) {
+    filter: grayscale(0);
+    transform: scale(1.04);
+  }
+  .meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .line { display: flex; align-items: baseline; gap: 0.75rem; }
+  .num { color: var(--faint); font-family: var(--font-display); font-size: 0.8rem; }
+  .title {
+    font-size: 1.15rem;
+    transition: color 0.3s var(--ease);
+  }
+  .cat {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+</style>

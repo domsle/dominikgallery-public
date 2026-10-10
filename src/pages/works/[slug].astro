@@ -1,0 +1,14 @@
+---
+import WorkDetailScreen from '../../screens/WorkDetailScreen.astro';
+import { getWorks, workSlug } from '../../i18n/works';
+
+export async function getStaticPaths() {
+  const works = await getWorks('pl');
+  const n = works.length;
+  return works.map((entry, i) => ({
+    params: { slug: workSlug(entry) },
+    props: { entry, prev: works[(i - 1 + n) % n], next: works[(i + 1) % n] },
+  }));
+}
+---
+<WorkDetailScreen entry={Astro.props.entry} prev={Astro.props.prev} next={Astro.props.next} />

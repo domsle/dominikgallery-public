@@ -1,0 +1,86 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getContent } from '../i18n/content';
+
+interface Props { compact?: boolean; }
+const { compact = false } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { faqs } = getContent(lang);
+---
+
+<section class:list={['faq', compact ? 'faq--compact' : 'section']}>
+  <div class:list={[{ container: !compact }]}>
+    <header class="head">
+      <p class="eyebrow">{t('faq.eyebrow')}</p>
+      <h2 class="section-title">{t('faq.title')}</h2>
+    </header>
+
+    <div class="list">
+      {faqs.map((f) => (
+        <details class="item">
+          <summary>
+            <span class="q">{f.q}</span>
+            <span class="icon" aria-hidden="true">+</span>
+          </summary>
+          <div class="a"><p>{f.a}</p></div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .list { border-top: 1px solid var(--border); }
+  .item { border-bottom: 1px solid var(--border); }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1.1rem, 2.5vw, 1.6rem) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  .q {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.05rem, 2.5vw, 1.5rem);
+  }
+  .icon {
+    flex: 0 0 auto;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--muted);
+    transition: transform 0.35s var(--ease), color 0.35s var(--ease);
+  }
+  .item[open] .icon { transform: rotate(135deg); color: var(--text); }
+  .a {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s var(--ease);
+  }
+  .item[open] .a { grid-template-rows: 1fr; }
+  .a > p {
+    overflow: hidden;
+    color: var(--muted);
+    max-width: 62ch;
+    padding-bottom: clamp(1.1rem, 2.5vw, 1.6rem);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .a { transition: none; }
+  }
+
+  /* Compact variant — used inside the contact grid (no section padding). */
+  .faq--compact .head { margin-bottom: 1.25rem; }
+  .faq--compact .head .eyebrow { white-space: nowrap; }
+  .faq--compact .section-title { font-size: clamp(1.75rem, 2.5vw, 2rem); margin-top: 0.75rem; }
+  .faq--compact summary { padding: 1rem 0; }
+  .faq--compact .q { font-weight: 600; font-size: 1rem; letter-spacing: -0.005em; }
+  .faq--compact .icon { font-size: 1.375rem; }
+  .faq--compact .a > p { padding-bottom: 1rem; font-size: 0.94rem; }
+</style>

@@ -1,0 +1,17 @@
+# Template - copy this file per testimonial. It will NOT render:
+#   - `consent` is false, and
+#   - the whole section stays hidden until there are `testimonialsMinimum` (3)
+#     consented entries (see src/site.config.ts).
+# type: quote | image | video
+#   quote → set `content`
+#   image → set `src` (a cropped/masked screenshot under /public, owner's job)
+#   video → set `src`
+# `attribution` is optional (leave out if the person doesn't want to be named).
+# `translation` is a short gloss shown on the locale whose language differs from `lang`.
+type: quote
+content: "Przykładowa opinia - nie wyświetli się, dopóki consent nie jest true."
+translation: "Example testimonial - hidden until consent is true."
+attribution: ""
+lang: pl
+consent: false
+date: 2026-01-01

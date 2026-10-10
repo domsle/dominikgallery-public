@@ -1,0 +1,284 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FAQ from '../components/FAQ.astro';
+import SessionSteps from '../components/SessionSteps.astro';
+import { Image } from 'astro:assets';
+import { site, businessJsonLd } from '../site.config';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+import { getContent } from '../i18n/content';
+import { getWork } from '../i18n/works';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { services } = getContent(lang);
+
+// Dropdown: soft, low-commitment default first (pre-selected — nothing to think
+// about), then the concrete services, then a catch-all. The default is a valid
+// choice on its own, so the select is never "wrong" and needs no validation.
+const projectDefault = t('contact.form.ptypeDefault');
+const somethingElse = lang === 'pl' ? 'Coś innego' : 'Something else';
+const projectTypes = [...services.map((s) => s.title), somethingElse];
+
+// Three photos from the black & white portrait session for the contact hero row,
+// each with generated, localized alt text.
+const contactImages = getWork(lang, 'bnw_portraits')?.data.gallery.slice(0, 3) ?? [];
+
+const preferEmail = lang === 'pl' ? 'Wolisz e-mail?' : 'Prefer email?';
+
+const jsonLd = businessJsonLd({
+  lang,
+  url: new URL(localizePath('/contact', lang), Astro.site).href,
+  image: new URL('/og-default.jpg', Astro.site).href,
+});
+
+// Client-side validation copy — passed to the inline script via data-*.
+const messages = {
+  name: t('contact.err.name'),
+  email: t('contact.err.email'),
+  message: t('contact.err.message'),
+  fix: t('contact.err.fix'),
+  ok: t('contact.status.ok'),
+  bad: t('contact.status.bad'),
+};
+---
+
+<BaseLayout titleFull={t('meta.contact.title')} description={t('contact.lead')} jsonLd={jsonLd}>
+  <section class="section contact" aria-labelledby="contact-title">
+    <div class="container contact__grid">
+      <!-- Photos -->
+      <div class="contact__photos">
+        {contactImages.map((img, i) => (
+          <div class="frame" data-reveal style={`--r:${i}`}>
+            <Image src={img.src} alt={img.alt} widths={[300, 450]} sizes="(max-width: 620px) 45vw, (max-width: 1023px) 30vw, 12vw" loading={i < 2 ? 'eager' : 'lazy'} />
+          </div>
+        ))}
+      </div>
+
+      <!-- Intro -->
+      <div class="contact__intro intro">
+        <p class="eyebrow" data-reveal style="--r:3">{t('contact.eyebrow')}</p>
+        <h1 id="contact-title" class="section-title" data-reveal style="--r:4">{t('contact.title')}</h1>
+        <p class="lead" data-reveal style="--r:5">{t('contact.lead')}</p>
+      </div>
+
+      <!-- FAQ (before the form, in reading + source order) -->
+      <div class="contact__faq" id="faq" data-reveal style="--r:6">
+        <FAQ compact />
+      </div>
+
+      <!-- Form -->
+      <div class="contact__form" data-reveal style="--r:7">
+        <form
+          class="form"
+          id="inquiry"
+          name="inquiry"
+          method="POST"
+          data-netlify="true"
+          netlify-honeypot="bot-field"
+          novalidate
+          data-msg-name={messages.name}
+          data-msg-email={messages.email}
+          data-msg-message={messages.message}
+          data-msg-fix={messages.fix}
+          data-msg-ok={messages.ok}
+          data-msg-bad={messages.bad}
+        >
+          <input type="hidden" name="form-name" value="inquiry" />
+          <p class="hp"><label>{t('contact.form.hp')} <input name="bot-field" /></label></p>
+
+          <div class="form__row">
+            <div class="field">
+              <label for="name">{t('contact.form.name')}</label>
+              <input id="name" name="name" type="text" autocomplete="name" required />
+              <span class="err" data-for="name"></span>
+            </div>
+
+            <div class="field">
+              <label for="email">{t('contact.form.email')}</label>
+              <input id="email" name="email" type="email" autocomplete="email" required />
+              <span class="err" data-for="email"></span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ptype">{t('contact.form.ptype')}</label>
+            <select id="ptype" name="project-type">
+              <option value={projectDefault} selected>{projectDefault}</option>
+              {projectTypes.map((p) => <option value={p}>{p}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="message">{t('contact.form.message')}</label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+            <span class="err" data-for="message"></span>
+          </div>
+
+          <div class="form__actions">
+            <button type="submit" class="btn btn--solid">
+              {t('contact.form.submit')} <span class="arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="form__alt">{preferEmail} <a href={`mailto:${site.email}`}>{site.email}</a></p>
+          </div>
+
+          <p class="status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <SessionSteps />
+</BaseLayout>
+
+<style>
+  /* Section rhythm override — the global --rhythm (up to 8rem) is too tall here.
+     Other pages keep --rhythm untouched. */
+  .section.contact {
+    padding-top: clamp(1.75rem, 4.5vw, 4rem);     /* 28px → 64px */
+    padding-bottom: clamp(3.5rem, 6vw, 5.5rem);   /* 56px → 88px */
+  }
+
+  /* Base (mobile-first): one column, source order photos → intro → FAQ → form. */
+  .contact__grid { display: grid; gap: 2rem; }        /* ≤32px between blocks */
+
+  .contact__intro.intro { display: grid; gap: 1rem; max-width: 40ch; margin-inline: 0; }
+  .contact__intro .section-title { margin-top: 0; }   /* kills the doubled eyebrow→H1 gap */
+
+  /* Photos */
+  .contact__photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .frame { aspect-ratio: 4 / 5; overflow: hidden; background: var(--surface); border-radius: var(--radius); }
+  .frame :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+  .frame:hover :global(img) { transform: scale(1.03); }
+
+  /* Form */
+  .form { display: grid; gap: 1.25rem; max-width: none; margin-inline: 0; }
+  .hp { position: absolute; left: -9999px; }
+  .form__row { display: grid; gap: 1rem; }
+  .field { display: grid; gap: 0.5rem; }
+  .field label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted);
+  }
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    transition: border-color 0.3s var(--ease);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--text); }
+  textarea { resize: vertical; min-height: 9rem; }
+  .field[data-invalid] input,
+  .field[data-invalid] select,
+  .field[data-invalid] textarea { border-color: #d66; }
+  .err { color: #d66; font-size: 0.8rem; min-height: 1em; }
+  .status { font-size: 0.9rem; min-height: 1.2em; }
+  .status.ok { color: #7bbf7b; }
+  .status.bad { color: #d66; }
+
+  .form__actions { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .form__alt { margin: 0; font-size: 0.875rem; color: var(--muted); }
+  .form__alt a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Name + Email side by side from tablet up. */
+  @media (min-width: 761px) {
+    .form__row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* Tablet: single column, content width capped. Photos stay 3-up. */
+  @media (min-width: 761px) and (max-width: 1023px) {
+    .contact__grid { max-width: 40rem; margin-inline: auto; }
+  }
+
+  /* Desktop: two columns, two rows — FAQ (left) and form (right) start level. */
+  @media (min-width: 1024px) {
+    .contact__grid {
+      grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+      grid-template-areas:
+        "intro  photos"
+        "faq    form";
+      column-gap: clamp(3rem, 7vw, 6rem);
+      row-gap: 3rem;
+      align-items: start;
+    }
+    .contact__intro  { grid-area: intro; }
+    .contact__photos { grid-area: photos; align-self: end; }
+    .contact__faq    { grid-area: faq; }
+    .contact__form   { grid-area: form; }
+  }
+
+  /* Mobile: photos 2-up (hide the third), full-width submit. */
+  @media (max-width: 620px) {
+    .contact__photos { grid-template-columns: 1fr 1fr; }
+    .contact__photos .frame:last-child { display: none; }
+    .form__actions { justify-content: center; text-align: center; }
+    .form__actions .btn { width: 100%; }
+    .form__alt { width: 100%; text-align: center; }
+  }
+</style>
+
+<script>
+  // Desktop only: open the first FAQ item on load (mobile stays all-collapsed).
+  if (matchMedia('(min-width: 1024px)').matches) {
+    document.querySelector('#faq details')?.setAttribute('open', '');
+  }
+
+  const form = document.getElementById('inquiry') as HTMLFormElement | null;
+  const status = document.getElementById('form-status');
+  const m = (k: string) => form?.dataset[k] ?? '';
+
+  const setErr = (name: string, msg: string) => {
+    const span = form?.querySelector(`.err[data-for="${name}"]`);
+    const field = span?.closest('.field');
+    if (span) span.textContent = msg;
+    if (field) field.toggleAttribute('data-invalid', !!msg);
+  };
+
+  const validate = () => {
+    if (!form) return false;
+    let ok = true;
+    const fd = new FormData(form);
+    const name = String(fd.get('name') ?? '').trim();
+    const email = String(fd.get('email') ?? '').trim();
+    const message = String(fd.get('message') ?? '').trim();
+
+    setErr('name', name ? '' : m('msgName'));
+    if (!name) ok = false;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setErr('email', emailOk ? '' : m('msgEmail'));
+    if (!emailOk) ok = false;
+
+    setErr('message', message.length >= 10 ? '' : m('msgMessage'));
+    if (message.length < 10) ok = false;
+
+    return ok;
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!status) return;
+    status.className = 'status';
+    status.textContent = '';
+    if (!validate()) {
+      status.className = 'status bad';
+      status.textContent = m('msgFix');
+      return;
+    }
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(new FormData(form) as any).toString(),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      status.className = 'status ok';
+      status.textContent = m('msgOk');
+    } catch {
+      status.className = 'status bad';
+      status.textContent = m('msgBad');
+    }
+  });
+</script>

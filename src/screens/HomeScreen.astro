@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import Hero from '../components/Hero.astro';
+import Services from '../components/Services.astro';
+import SessionSteps from '../components/SessionSteps.astro';
+import Testimonials from '../components/Testimonials.astro';
+import CTA from '../components/CTA.astro';
+import { priceFrom, businessJsonLd } from '../site.config';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+import { getWorks, workSlug } from '../i18n/works';
+import { featuredImages } from '../data/gallery';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Hero marquee = the real photos tagged `featured` in gallery.yaml.
+const heroImages = featuredImages;
+
+const works = getWorks(lang);
+const featured = works.filter((w) => w.data.featured).slice(0, 4);
+
+// Homepage meta - appendix copy, price pulled from config (never hardcoded).
+const metaDescription = lang === 'pl'
+  ? `Nieśpieszne sesje portretowe w Warszawie - portrety, sesje dla par i kameralne wydarzenia. Sesja ${priceFrom('pl')}, co najmniej 15 wyretuszowanych zdjęć w ciągu dwóch tygodni.`
+  : `Unhurried portrait sessions in Warsaw - portraits, couple sessions and small events. Sessions ${priceFrom('en')}, at least 15 edited photos within two weeks.`;
+
+const jsonLd = businessJsonLd({
+  lang,
+  url: new URL(localizePath('/', lang), Astro.site).href,
+  image: new URL('/og-default.jpg', Astro.site).href,
+});
+---
+
+<BaseLayout titleFull={t('meta.home.title')} description={metaDescription} jsonLd={jsonLd}>
+  <Hero images={heroImages} />
+
+  <section class="section works">
+    <div class="container works-wide">
+      <header class="works-head">
+        <h2 class="section-title">{t('home.selectedWorks')}</h2>
+        <a href={localizePath('/works', lang)} class="all">
+          {t('home.allWorks')} <span aria-hidden="true">→</span>
+        </a>
+      </header>
+
+      <div class="works-grid">
+        {featured.map((w, i) => (
+          <a class="work" href={localizePath(`/works/${workSlug(w)}`, lang)}>
+            <div class="work-media">
+              <Image
+                src={w.data.cover}
+                alt={w.data.title}
+                widths={[400, 700, 1000]}
+                sizes="(max-width: 700px) 90vw, (max-width: 1100px) 45vw, 30vw"
+                loading="lazy"
+              />
+              <span class="badge">{String(i + 1).padStart(2, '0')} · {w.data.category}</span>
+            </div>
+            <div class="work-meta">
+              <span class="title">{w.data.title}</span>
+              <span class="year">{w.data.year}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <Services />
+
+  <SessionSteps />
+
+  <Testimonials />
+
+  <CTA
+    eyebrow={t('home.cta.eyebrow')}
+    title={t('home.cta.title')}
+    buttonLabel={t('home.cta.button')}
+    buttonHref={localizePath('/contact', lang)}
+  />
+</BaseLayout>
+
+<style>
+  .works-wide { max-width: calc(var(--maxw) * 1.35); }  /* wide enough for 4 frames in a row */
+
+  /* Pull "Selected work" up closer to the hero (override the default section rhythm). */
+  .works { padding-top: clamp(1.25rem, 3vw, 2.5rem); }
+
+  .works-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .works-head .section-title { margin-top: 0; }
+  .works-head .all {
+    font: 500 10px/1 var(--font-mono);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(244, 242, 238, 0.5);
+    transition: color 0.3s var(--ease);
+  }
+  .works-head .all:hover { color: var(--text); }
+
+  /* Uniform responsive grid: equal columns, each photo fills its cell at one shared
+     aspect ratio so every tile lines up at any width (no ragged aspect-sized frames). */
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .work {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;                         /* let cells shrink cleanly */
+  }
+
+  /* Tail of the homepage intro ladder - the "Recent work" row rises + fades in after
+     the hero. Gated on the same `.intro-js` / data-intro="in" trigger set on <html>,
+     so no-JS and reduced-motion visitors see the natural, fully-visible state. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.intro-js) .works-head,
+    :global(html.intro-js) .work {
+      animation: fade-up 0.8s cubic-bezier(.16, 1, .3, 1) both paused;
+    }
+    :global(html.intro-js) .works-head { animation-delay: 2.05s; }
+    :global(html.intro-js) .work:nth-child(1) { animation-delay: 2.10s; }
+    :global(html.intro-js) .work:nth-child(2) { animation-delay: 2.15s; }
+    :global(html.intro-js) .work:nth-child(3) { animation-delay: 2.20s; }
+    :global(html.intro-js) .work:nth-child(4) { animation-delay: 2.25s; }
+
+    :global(html.intro-js[data-intro='in']) .works-head,
+    :global(html.intro-js[data-intro='in']) .work {
+      animation-play-state: running;
+    }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(34px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .work-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;                  /* one shared shape for every tile */
+  }
+  .work-media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;                    /* fill the tile uniformly */
+    display: block;
+    transition: transform 0.6s var(--ease);
+  }
+  .work:hover .work-media :global(img),
+  .work:focus-visible .work-media :global(img) { transform: scale(1.045); }
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 9px;
+    background: rgba(10, 10, 10, 0.75);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    font: 500 9px/1 var(--font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .work-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .work-meta .title {
+    font: 800 20px/1 var(--font-display);
+    letter-spacing: -0.015em;
+    text-transform: uppercase;
+  }
+  .work-meta .year {
+    font: 500 9.5px/1 var(--font-mono);
+    color: rgba(244, 242, 238, 0.42);
+  }
+
+  /* Fewer columns as the screen narrows - tiles stay uniform and aligned. */
+  @media (max-width: 1100px) {
+    .works-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 620px) {
+    .works-grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+</style>

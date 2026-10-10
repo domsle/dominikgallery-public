@@ -1,0 +1,47 @@
+---
+import { getLangFromUrl, alternatePath, otherLangs, languages, useTranslations } from '../i18n/utils';
+
+const current = getLangFromUrl(Astro.url);
+const t = useTranslations(current);
+const targets = otherLangs(current);
+---
+
+<div class="lang" aria-label={t('a11y.langSwitch')}>
+  <span class="current" aria-current="true">{current.toUpperCase()}</span>
+  {targets.map((l) => (
+    <a class="alt" href={alternatePath(Astro.url, l)} hreflang={l} lang={l} title={languages[l]} data-setlang={l}>
+      {l.toUpperCase()}
+    </a>
+  ))}
+</div>
+
+<script>
+  // Persist an explicit language choice so auto-redirect honors it and stops guessing.
+  document.querySelectorAll<HTMLAnchorElement>('.lang a[data-setlang]').forEach((a) => {
+    a.addEventListener('click', () => {
+      try {
+        localStorage.setItem('pref-lang', a.dataset.setlang!);
+      } catch (e) {}
+    });
+  });
+</script>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+  }
+  .lang .current { color: var(--text); }
+  .lang .alt { color: var(--faint); transition: color 0.3s var(--ease); }
+  .lang .alt:hover { color: var(--text); }
+  .lang .current + .alt::before,
+  .lang .alt + .alt::before {
+    content: '/';
+    color: var(--border);
+    margin-right: 0.35rem;
+  }
+</style>

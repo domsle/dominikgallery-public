@@ -1,0 +1,98 @@
+---
+import { site, socials } from '../site.config';
+import { getLangFromUrl, useTranslations, localizedNav, localizePath } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const nav = localizedNav(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="cols">
+      <div class="col">
+        <p class="col-head">{t('footer.menu')}</p>
+        <ul>
+          {nav.map((i) => <li><a href={i.href}>{i.label}</a></li>)}
+          <li><a href={localizePath('/licenses', lang)}>{t('nav.licenses')}</a></li>
+        </ul>
+      </div>
+
+      <div class="col">
+        <p class="col-head">{t('footer.elsewhere')}</p>
+        <ul>
+          {socials.map((s) => (
+            <li><a href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="col">
+        <p class="col-head">{t('footer.studio')}</p>
+        <p class="tagline">{t('site.tagline')}</p>
+        <p class="meta">{t('footer.portfolio')}</p>
+        <p class="meta"><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+    </div>
+
+    <p class="copy">© {year} {site.name}. {t('footer.rights')}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-soft);
+    padding-block: clamp(3rem, 7vw, 5rem) 2rem;
+  }
+  .top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    line-height: 0.85;
+    font-size: clamp(2.5rem, 12vw, 8rem);
+  }
+  .totop {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.78rem;
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+  }
+  .totop:hover { color: var(--text); }
+  .rule { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gap);
+  }
+  .col-head {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+    color: var(--faint);
+    margin-bottom: 1rem;
+  }
+  .col ul { list-style: none; padding: 0; display: grid; gap: 0.55rem; }
+  .col a { color: var(--muted); transition: color 0.3s var(--ease); }
+  .col a:hover { color: var(--text); }
+  .tagline { color: var(--muted); max-width: 30ch; margin-bottom: 0.75rem; }
+  .meta { color: var(--muted); font-size: 0.9rem; }
+  .copy { margin-top: 3rem; color: var(--faint); font-size: 0.8rem; }
+
+  @media (max-width: 680px) {
+    .cols { grid-template-columns: 1fr; gap: 2rem; }
+  }
+</style>

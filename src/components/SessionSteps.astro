@@ -1,0 +1,62 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getContent } from '../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { session } = getContent(lang);
+---
+
+<section class="section session" id="session">
+  <div class="container">
+    <header class="head">
+      <p class="eyebrow">{t('session.eyebrow')}</p>
+      <h2 class="section-title">{session.heading}</h2>
+    </header>
+
+    <ol class="steps">
+      {session.steps.map((s, i) => (
+        <li class="step">
+          <span class="idx">{String(i + 1).padStart(2, '0')}</span>
+          <p class="body"><span class="lead">{s.lead}</span> {s.body}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .head { margin-bottom: clamp(2rem, 5vw, 4rem); }
+  .steps { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--border); }
+  .step {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    padding: clamp(1.25rem, 3vw, 2rem) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .idx {
+    color: var(--faint);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    line-height: 1;
+    padding-top: 0.3em;
+  }
+  .body {
+    margin: 0;
+    max-width: 60ch;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .lead {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-right: 0.4em;
+  }
+  @media (max-width: 620px) {
+    .step { grid-template-columns: 2.5rem 1fr; gap: 1.25rem; }
+  }
+</style>

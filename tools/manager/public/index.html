@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Site Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">Photothèque <span style="color:var(--muted);font-size:11px;">manager</span></div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="save-row">
+      <a id="dev-link" href="http://localhost:4321" target="_blank" style="display:none;font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Open ↗</a>
+      <button class="ghost" id="dev-btn">Start dev server</button>
+      <button class="ghost" id="stage-btn">Stage changes</button>
+      <button class="ghost" id="deploy-btn" title="Stage your changes first" disabled>Deploy</button>
+      <span class="save-label"><span class="dot clean" id="save-dot"></span><span id="save-label">No changes</span></span>
+      <button class="primary" id="write-btn" disabled>Write to disk →</button>
+    </div>
+  </div>
+</header>
+<main id="main"></main>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

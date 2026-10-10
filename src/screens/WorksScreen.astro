@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WorkCard from '../components/WorkCard.astro';
+import CTA from '../components/CTA.astro';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+import { getWorks, workSlug } from '../i18n/works';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const works = await getWorks(lang);
+---
+
+<BaseLayout titleFull={t('meta.works.title')} description={t('works.lead')}>
+  <section class="section">
+    <div class="container">
+      <header class="head">
+        <p class="eyebrow" data-reveal style="--r:0">{t('works.eyebrow')}</p>
+        <h1 class="section-title" data-reveal style="--r:1">{t('works.title')}</h1>
+        <p class="lead" data-reveal style="--r:2">{t('works.lead')}</p>
+      </header>
+
+      <div class="grid">
+        {works.map((w, i) => (
+          <WorkCard
+            data-reveal
+            style={`--r:${3 + i}`}
+            href={localizePath(`/works/${workSlug(w)}`, lang)}
+            title={w.data.title}
+            category={w.data.category}
+            cover={w.data.cover}
+            index={i + 1}
+            eager={i < 4}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CTA
+    eyebrow={t('works.cta.eyebrow')}
+    title={t('works.cta.title')}
+    buttonLabel={t('works.cta.button')}
+    buttonHref={localizePath('/contact', lang)}
+  />
+</BaseLayout>
+
+<style>
+  .head { margin-bottom: clamp(2rem, 5vw, 3.5rem); display: grid; gap: 1rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gap);
+  }
+  @media (max-width: 820px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+</style>

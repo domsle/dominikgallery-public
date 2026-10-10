@@ -1,0 +1,234 @@
+collections:
+  - id: yoga_sunset
+    name: Sunny Yoga in Warsaw
+  - id: bnw_portraits
+    name: B&W Portraits
+  - id: portraits
+    name: Sensual Portraits
+  - id: daga
+    name: Outdoor Portraits
+  - id: smiles
+    name: Beautiful Smiles
+  - id: vietnam
+    name: Vietnam
+  - id: bw_women
+    name: Women in Vietnam
+  - id: acroyoga
+    name: Acro Yoga Classes
+images:
+  - path: bnw_portraits/758_P9190026.jpg
+    collections: [bnw_portraits]
+  - path: bnw_portraits/768_P9190084.jpg
+    collections: [bnw_portraits]
+  - path: bnw_portraits/769_P1096120.jpg
+    collections: [bnw_portraits]
+  - path: yoga_sunset/P1084130.jpg
+    collections: [yoga_sunset, featured]
+  - path: yoga_sunset/P1084214.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084137.jpg
+    collections: [yoga_sunset, featured]
+  - path: yoga_sunset/P1084141.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084200.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084203.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280692 1.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084240.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/1000049388.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/1000049386.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/1000049390.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280709.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280791.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084402.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084410.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280797 1.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280810.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084267.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084255.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280818.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084543.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P1084068.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280633.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280636.jpg
+    collections: [yoga_sunset]
+  - path: yoga_sunset/P8280905.jpg
+    collections: [yoga_sunset, featured]
+  - path: yoga_sunset/P8280935 2.jpg
+    collections: [yoga_sunset, featured]
+  - path: portraits/P1081192.jpg
+    collections: [portraits]
+  - path: portraits/P1081209.jpg
+    collections: [portraits]
+  - path: portraits/P7231309.jpg
+    collections: [portraits]
+  - path: portraits/P7231038.jpg
+    collections: [portraits, featured]
+  - path: portraits/P7231041.jpg
+    collections: [portraits, featured]
+  - path: portraits/P7231048.jpg
+    collections: [portraits, featured]
+  - path: portraits/P7231355.jpg
+    collections: [portraits, featured]
+  - path: portraits/P7231356.jpg
+    collections: [portraits, featured]
+  - path: portraits/P7231357.jpg
+    collections: [portraits, featured]
+  - path: portraits/P1082424.jpg
+    collections: [daga]
+  - path: portraits/P1082426.jpg
+    collections: [daga, featured]
+  - path: portraits/P1082255.jpg
+    collections: [daga]
+  - path: portraits/P1082260.jpg
+    collections: [daga]
+  - path: portraits/P1082265.jpg
+    collections: [daga]
+  - path: portraits/P1082290.jpg
+    collections: [daga]
+  - path: portraits/P1082297.jpg
+    collections: [daga]
+  - path: portraits/P1082298.jpg
+    collections: [daga]
+  - path: portraits/P1082331.jpg
+    collections: [daga, featured]
+  - path: portraits/P1082332.jpg
+    collections: [daga]
+  - path: portraits/P1082344.jpg
+    collections: [daga]
+  - path: portraits/P1082501.jpg
+    collections: [daga, featured]
+  - path: portraits/P8080059.jpg
+    collections: [daga, featured]
+  - path: portraits/P8080061.jpg
+    collections: [daga]
+  - path: smiles/P1070012.jpg
+    collections: [smiles]
+  - path: smiles/P1070063.jpg
+    collections: [smiles]
+  - path: smiles/P1070078_01.jpg
+    collections: [smiles]
+  - path: smiles/P1070087.jpg
+    collections: [smiles]
+  - path: smiles/P1070089.jpg
+    collections: [smiles]
+  - path: smiles/P1070110.jpg
+    collections: [smiles]
+  - path: smiles/P1070123.jpg
+    collections: [smiles]
+  - path: portraits/P1070940_01.jpg
+    collections: [portraits]
+  - path: portraits/P1070944.jpg
+    collections: [portraits]
+  - path: portraits/P7231090.jpg
+    collections: [portraits]
+  - path: portraits/P7231092_01.jpg
+    collections: [portraits]
+  - path: boats/1.jpg
+    collections: [vietnam, featured]
+  - path: boats/2.jpg
+    collections: [vietnam]
+  - path: boats/3.jpg
+    collections: [vietnam]
+  - path: bw_women/1.jpg
+    collections: [bw_women, featured]
+  - path: bw_women/2.jpg
+    collections: [bw_women, featured]
+  - path: bw_women/3.jpg
+    collections: [bw_women, featured]
+  - path: bw_women/4.jpg
+    collections: [bw_women]
+  - path: light/1.jpg
+    collections: [vietnam, featured]
+  - path: light/2.jpg
+    collections: [vietnam, featured]
+  - path: light/3.jpg
+    collections: [vietnam]
+  - path: motion/1.jpg
+    collections: [vietnam, featured]
+  - path: motion/2.jpg
+    collections: [vietnam]
+  - path: motion/3.jpg
+    collections: [vietnam]
+  - path: motion/4.jpg
+    collections: [vietnam]
+  - path: acroyoga/00.jpg
+    collections: [acroyoga, featured]
+  - path: acroyoga/01.jpg
+    collections: [acroyoga]
+  - path: acroyoga/03.jpg
+    collections: [acroyoga]
+  - path: acroyoga/04.jpg
+    collections: [acroyoga]
+  - path: acroyoga/05.jpg
+    collections: [acroyoga]
+  - path: acroyoga/06.jpg
+    collections: [acroyoga]
+  - path: acroyoga/07.jpg
+    collections: [acroyoga]
+  - path: acroyoga/08.jpg
+    collections: [acroyoga]
+  - path: acroyoga/09.jpg
+    collections: [acroyoga]
+  - path: acroyoga/10.jpg
+    collections: [acroyoga]
+  - path: acroyoga/11.jpg
+    collections: [acroyoga]
+  - path: acroyoga/12.jpg
+    collections: [acroyoga]
+  - path: acroyoga/13.jpg
+    collections: [acroyoga]
+  - path: acroyoga/14.jpg
+    collections: [acroyoga]
+  - path: acroyoga/15.jpg
+    collections: [acroyoga]
+  - path: acroyoga/16.jpg
+    collections: [acroyoga]
+  - path: acroyoga/17.jpg
+    collections: [acroyoga]
+  - path: acroyoga/18.jpg
+    collections: [acroyoga]
+  - path: acroyoga/19.jpg
+    collections: [acroyoga]
+  - path: acroyoga/20.jpg
+    collections: [acroyoga]
+  - path: acroyoga/21.jpg
+    collections: [acroyoga]
+  - path: acroyoga/22.jpg
+    collections: [acroyoga]
+  - path: acroyoga/23.jpg
+    collections: [acroyoga]
+  - path: acroyoga/24.jpg
+    collections: [acroyoga]
+  - path: acroyoga/25.jpg
+    collections: [acroyoga]
+  - path: bnw_portraits/P1070959.jpg
+    collections: [bnw_portraits, featured]
+  - path: bnw_portraits/P1070960.jpg
+    collections: [bnw_portraits, featured]
+  - path: bnw_portraits/P1070970.jpg
+    collections: [bnw_portraits, featured]
+  - path: bnw_portraits/P1097235.jpg
+    collections: [bnw_portraits]
+  - path: bnw_portraits/P1097095.jpg
+    collections: [bnw_portraits]
+  - path: bnw_portraits/P1097143_01.jpg
+    collections: [bnw_portraits]

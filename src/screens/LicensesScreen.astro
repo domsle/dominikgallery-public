@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../site.config';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t('nav.licenses')} description={t('licenses.imagery.p')}>
+  <section class="section">
+    <div class="container prose">
+      <p class="eyebrow" data-reveal style="--r:0">{t('licenses.eyebrow')}</p>
+      <h1 class="section-title" data-reveal style="--r:1">{t('licenses.title')}</h1>
+
+      <h2 data-reveal style="--r:2">{t('licenses.imagery.h')}</h2>
+      <p data-reveal style="--r:2">{t('licenses.imagery.p')}</p>
+
+      <h2 data-reveal style="--r:3">{t('licenses.theme.h')}</h2>
+      <p data-reveal style="--r:3">{t('licenses.theme.p')}</p>
+
+      <h2 data-reveal style="--r:4">{t('licenses.client.h')}</h2>
+      <p data-reveal style="--r:4">{t('licenses.client.p')} <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+
+      <p class="back" data-reveal style="--r:5"><a href={localizePath('/', lang)}>← {t('licenses.back')}</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .prose { max-width: 68ch; }
+  .prose h1 { margin-bottom: 2.5rem; }
+  .prose h2 { font-size: 1.3rem; margin-top: 2.5rem; margin-bottom: 0.75rem; }
+  .prose p { color: var(--muted); margin-bottom: 1rem; }
+  .prose a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+  .back { margin-top: 3rem; }
+</style>

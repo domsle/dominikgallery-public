@@ -1,0 +1,326 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTA from '../components/CTA.astro';
+import { Image, getImage } from 'astro:assets';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+import { workSlug, type WorkEntry } from '../i18n/works';
+import { site } from '../site.config';
+
+interface Props { entry: WorkEntry; prev: WorkEntry; next: WorkEntry; }
+const { entry, prev, next } = Astro.props;
+const { data } = entry;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Masonry shows every photo in the series (no cropped hero above it anymore).
+// Each entry carries its src + generated, localized alt text.
+const galleryImages = data.gallery;
+
+// A large - but still downsized + compressed - variant for the click-to-view lightbox.
+const fulls = await Promise.all(
+  galleryImages.map((img) => getImage({ src: img.src, width: 1600, format: 'webp', quality: 80 }))
+);
+const closeLabel = lang === 'pl' ? 'Zamknij' : 'Close';
+const prevLabel = lang === 'pl' ? 'Poprzednie' : 'Previous';
+const nextLabel = lang === 'pl' ? 'Następne' : 'Next';
+
+// Each series gets its own title (composed as "{series} - Dominik Ślęczka") and its own
+// meta description: prefer the real editorial intro (indexable body text), else compose.
+const metaDescription = data.description
+  ?? `${data.category} - ${data.title}, ${data.location} (${data.year}).`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: data.title,
+  genre: data.category,
+  dateCreated: data.year ? String(data.year) : undefined,
+  locationCreated: data.location,
+  author: { '@type': 'Person', name: site.brand },
+};
+---
+
+<BaseLayout
+  title={data.title}
+  description={metaDescription}
+  jsonLd={jsonLd}
+>
+  <article>
+    <div class="container head">
+      <a href={localizePath('/works', lang)} class="back" data-reveal style="--r:0">← {t('work.back')}</a>
+      <h1 class="title" data-reveal style="--r:1">{data.title}</h1>
+      <dl class="meta" data-reveal style="--r:2">
+        <div><dt>{t('work.category')}</dt><dd>{data.category}</dd></div>
+        {data.year && <div><dt>{t('work.year')}</dt><dd>{data.year}</dd></div>}
+        {data.location && <div><dt>{t('work.location')}</dt><dd>{data.location}</dd></div>}
+        <div><dt>{lang === 'pl' ? 'Zdjęcia' : 'Photos'}</dt><dd>{data.count}</dd></div>
+      </dl>
+      {data.description && <p class="intro" data-reveal style="--r:3">{data.description}</p>}
+    </div>
+
+    {galleryImages.length > 0 && (
+      <div class="container gallery" data-masonry>
+        {galleryImages.map((img, i) => (
+          <button
+            type="button"
+            class="g-item"
+            data-index={i}
+            data-full={fulls[i].src}
+            data-alt={img.alt}
+          >
+            <Image
+              src={img.src}
+              alt={img.alt}
+              width={1000}
+              widths={[400, 700, 1000]}
+              sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+              loading={i < 4 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          </button>
+        ))}
+      </div>
+    )}
+
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lb-btn lb-close" data-lb="close" aria-label={closeLabel}>✕</button>
+      <button class="lb-btn lb-prev" data-lb="prev" aria-label={prevLabel}>‹</button>
+      <img class="lb-img" alt="" />
+      <button class="lb-btn lb-next" data-lb="next" aria-label={nextLabel}>›</button>
+      <span class="lb-count" aria-hidden="true"></span>
+    </div>
+
+    <nav class="container pager" aria-label={t('nav.works')}>
+      <a class="pager-link prev" href={localizePath(`/works/${workSlug(prev)}`, lang)}>
+        <span class="dir">← {t('work.prev')}</span>
+        <span class="pname">{prev.data.title}</span>
+      </a>
+      <a class="pager-link next" href={localizePath(`/works/${workSlug(next)}`, lang)}>
+        <span class="dir">{t('work.next')} →</span>
+        <span class="pname">{next.data.title}</span>
+      </a>
+    </nav>
+  </article>
+
+  <CTA
+    eyebrow={t('work.cta.eyebrow')}
+    title={t('work.cta.title')}
+    buttonLabel={t('work.cta.button')}
+    buttonHref={localizePath('/contact', lang)}
+  />
+</BaseLayout>
+
+<style>
+  .head { padding-top: clamp(2rem, 5vw, 3.5rem); display: grid; gap: 1.5rem; }
+  .back {
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    transition: color 0.3s var(--ease);
+    width: max-content;
+  }
+  .back:hover { color: var(--text); }
+  .title { font-size: clamp(2.4rem, 9vw, 7rem); }
+  .meta { display: flex; flex-wrap: wrap; gap: 2.5rem; margin: 0; }
+  .meta dt {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--faint); margin-bottom: 0.35rem;
+  }
+  .meta dd { margin: 0; font-family: var(--font-display); text-transform: uppercase; }
+  .intro {
+    margin: 0;
+    max-width: 52ch;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* Masonry: fixed, monotonic column count (set by JS below), images keep their
+     real aspect ratio (no crop), placed round-robin so order stays left-to-right.
+     Column count only changes at 600 / 1000 - no per-pixel reflow. */
+  .gallery {
+    max-width: 1450px;           /* wider than the 1240px site container */
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: clamp(3rem, 7vw, 5rem);
+    display: flex;
+    gap: var(--gap);
+    align-items: flex-start;
+  }
+  /* Pre-JS / no-JS fallback: single-column stack in correct source order. */
+  .gallery:not([data-cols]) { flex-direction: column; }
+  .gallery:not([data-cols]) > .g-item { width: 100%; }
+  /* JS columns. */
+  .gallery :global(.masonry-col) {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+  .g-item {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+  .g-item :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s var(--ease);
+  }
+  .g-item:hover :global(img),
+  .g-item:focus-visible :global(img) { transform: scale(1.03); }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: clamp(1rem, 4vw, 3rem);
+  }
+  .lightbox[hidden] { display: none; }
+  .lb-img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius);
+    user-select: none;
+  }
+  .lb-btn {
+    position: absolute;
+    background: none;
+    border: 0;
+    color: var(--text);
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s var(--ease);
+  }
+  .lb-btn:hover, .lb-btn:focus-visible { opacity: 1; }
+  .lb-close { top: 1rem; right: 1.25rem; font-size: 1.6rem; }
+  .lb-prev, .lb-next {
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    padding: 0 clamp(0.5rem, 2vw, 1.5rem);
+  }
+  .lb-prev { left: 0.25rem; }
+  .lb-next { right: 0.25rem; }
+  .lb-count {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    border-top: 1px solid var(--border);
+  }
+  .pager-link { display: grid; gap: 0.4rem; transition: opacity 0.3s var(--ease); }
+  .pager-link.next { text-align: right; }
+  .pager-link:hover { opacity: 0.7; }
+  .dir { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+  .pname { font-family: var(--font-display); text-transform: uppercase; font-size: 1.2rem; }
+</style>
+
+<script>
+  // Masonry with a fixed, monotonic column count. Items are distributed round-robin
+  // (item i → column i % n) so visual order stays left-to-right, top-to-bottom.
+  // Relayout happens only when the column count actually changes - never per pixel.
+  const gallery = document.querySelector<HTMLElement>('.gallery[data-masonry]');
+  if (gallery) {
+    const items = Array.from(gallery.children) as HTMLElement[];
+    const columnsFor = (w: number) => (w < 600 ? 1 : w < 1000 ? 2 : 3);
+
+    const layout = () => {
+      const n = columnsFor(gallery.clientWidth);
+      if (gallery.dataset.cols === String(n)) return; // no change → skip
+      gallery.dataset.cols = String(n);
+
+      const cols: HTMLElement[] = [];
+      for (let i = 0; i < n; i++) {
+        const col = document.createElement('div');
+        col.className = 'masonry-col';
+        cols.push(col);
+      }
+      items.forEach((item, i) => cols[i % n].appendChild(item)); // round-robin = row order
+      gallery.replaceChildren(...cols);
+    };
+
+    layout();
+    let raf = 0;
+    new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(layout);
+    }).observe(gallery);
+
+    // --- Lightbox: click a photo → full-size overlay, in source order ---
+    const lb = document.getElementById('lightbox');
+    const lbImg = lb?.querySelector<HTMLImageElement>('.lb-img');
+    const lbCount = lb?.querySelector<HTMLElement>('.lb-count');
+    // Ordered by data-index so prev/next follow the real sequence, not column layout.
+    const shots = items
+      .map((el) => ({ full: el.dataset.full ?? '', alt: el.dataset.alt ?? '' }))
+      .filter((s) => s.full);
+    let cur = -1;
+
+    const show = (i: number) => {
+      if (!lb || !lbImg) return;
+      cur = (i + shots.length) % shots.length;
+      lbImg.src = shots[cur].full;
+      lbImg.alt = shots[cur].alt;
+      if (lbCount) lbCount.textContent = `${cur + 1} / ${shots.length}`;
+    };
+    const open = (i: number) => {
+      if (!lb) return;
+      show(i);
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      if (!lb) return;
+      lb.hidden = true;
+      lbImg && (lbImg.src = '');
+      document.body.style.overflow = '';
+    };
+
+    items.forEach((el) => {
+      el.addEventListener('click', () => open(Number(el.dataset.index)));
+    });
+    lb?.addEventListener('click', (e) => {
+      const act = (e.target as HTMLElement).closest('[data-lb]')?.getAttribute('data-lb');
+      if (act === 'prev') show(cur - 1);
+      else if (act === 'next') show(cur + 1);
+      else if (act === 'close' || e.target === lb) close(); // backdrop or ✕
+    });
+    document.addEventListener('keydown', (e) => {
+      if (lb?.hidden) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(cur - 1);
+      else if (e.key === 'ArrowRight') show(cur + 1);
+    });
+  }
+</script>

@@ -1,0 +1,34 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  buttonLabel: string;
+  buttonHref: string;
+}
+const { eyebrow, title, buttonLabel, buttonHref } = Astro.props;
+---
+
+<section class="cta section">
+  <div class="container inner">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 class="cta-title">{title}</h2>
+    <a href={buttonHref} class="btn btn--solid">
+      {buttonLabel} <span class="arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .cta { border-top: 1px solid var(--border); }
+  .inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  .cta-title {
+    font-size: clamp(2.4rem, 8vw, 6rem);
+    max-width: 16ch;
+  }
+</style>
